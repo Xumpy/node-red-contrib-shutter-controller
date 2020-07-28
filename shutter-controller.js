@@ -20,7 +20,7 @@ module.exports = function(RED) {
     let currentPercentage = 0 // always assume that shutters are open at start of nodered;
 
     function calculateTimeOut(config, differentPercentage){
-        let fullProcessingTime = Number(config.config.processTimeInSeconds);
+        let fullProcessingTime = Number(config.processTimeInSeconds);
         let timeout = (fullProcessingTime / 100 * Math.abs(differentPercentage)) * 1000;
         return timeout;
     }

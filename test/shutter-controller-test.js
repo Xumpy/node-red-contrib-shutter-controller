@@ -11,7 +11,7 @@ describe('shutter-controller Node', function () {
     });
     it('Test shutter controller', function (done) {
         var flow = [
-            { id: "n1", type: "shutter-controller", config: { idx: 1, processTimeInSeconds: 10 }, name: "shutter-controller",wires:[["n2"]] },
+            { id: "n1", type: "shutter-controller", processTimeInSeconds: 10 , name: "shutter-controller",wires:[["n2"]] },
             { id: "n2", type: "helper" }
         ];
 
