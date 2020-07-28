@@ -10,6 +10,11 @@
     "shutters"
   ],
   "author": "Nico Martens",
+  "node-red": {
+    "nodes": {
+      "shutter-controller": "shutter-controller.js"
+    }
+  },
   "license": "ISC",
   "devDependencies": {
     "node-red": "^1.1.2",
