@@ -16,7 +16,6 @@ function linkLogToConsole(context){
 }
 
 module.exports = function(RED) {
-    const queue = Queue();
     let currentPercentage = 0 // always assume that shutters are open at start of nodered;
 
     function calculateTimeOut(config, differentPercentage){
@@ -25,7 +24,7 @@ module.exports = function(RED) {
         return timeout;
     }
 
-    function sendUp(node, msg, timeOut){
+    function sendUp(queue, node, msg, timeOut){
         queue.place( function() {
             msg.topic = msg.payload.topic;
             msg.payload = "UP";
@@ -35,7 +34,7 @@ module.exports = function(RED) {
             }, timeOut);
         });
     }
-    function sendDown(node, msg, timeOut){
+    function sendDown(queue, node, msg, timeOut){
         queue.place(function() {
             msg.topic = msg.payload.topic;
             msg.payload = "DOWN";
@@ -45,7 +44,7 @@ module.exports = function(RED) {
             }, timeOut);
         });
     }
-    function sendStop(node, msg){
+    function sendStop(queue, node, msg){
         queue.place(function() {
             msg.payload = "STOP";
             node.send(msg); queue.next();
@@ -54,6 +53,7 @@ module.exports = function(RED) {
 
     function shutterControllerNode(config) {
         RED.nodes.createNode(this,config);
+        const queue = Queue();
 
         //linkLogToConsole(this);
         var node = this;
@@ -65,15 +65,15 @@ module.exports = function(RED) {
             // example 60% open, want to go to 50% needs to subtract 10% (-10%)
 
             if (shutterPercentage === 0){
-                sendUp(node, msg, calculateTimeOut(config, differentPercentage));
+                sendUp(queue, node, msg, calculateTimeOut(config, differentPercentage));
             } else if (shutterPercentage === 100){
-                sendDown(node, msg, calculateTimeOut(config, differentPercentage));
+                sendDown(queue, node, msg, calculateTimeOut(config, differentPercentage));
             } else if (differentPercentage < 0){
-                sendUp(node, msg, calculateTimeOut(config, differentPercentage));
-                sendStop(node, msg);
+                sendUp(queue, node, msg, calculateTimeOut(config, differentPercentage));
+                sendStop(queue, node, msg);
             } else if (differentPercentage > 0){
-                sendDown(node, msg, calculateTimeOut(config, differentPercentage));
-                sendStop(node, msg);
+                sendDown(queue, node, msg, calculateTimeOut(config, differentPercentage));
+                sendStop(queue, node, msg);
             }
             currentPercentage = shutterPercentage;
         });
