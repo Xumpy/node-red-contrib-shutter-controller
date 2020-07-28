@@ -1,0 +1,19 @@
+{
+  "name": "node-red-contrib-shutter-controller",
+  "version": "1.0.0",
+  "description": "Shutters controller",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "shutters"
+  ],
+  "author": "Nico Martens",
+  "license": "ISC",
+  "devDependencies": {
+    "node-red": "^1.1.2",
+    "sync-queue": "0.0.2",
+    "node-red-node-test-helper": "^0.2.5"
+  }
+}

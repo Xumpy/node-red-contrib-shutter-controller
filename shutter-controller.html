@@ -1,0 +1,33 @@
+<script type="text/javascript">
+    RED.nodes.registerType('shutter-controller',{
+        category: 'function',
+        color: '#a6bbcf',
+        defaults: {
+            config: {
+                idx: { value: "" },
+                processTimeInSeconds: {value:"30"}
+            }
+        },
+        inputs:1,
+        outputs:1,
+        icon: "file.png",
+        label: function() {
+            return this.name||"shutter-controller";
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="shutter-controller">
+    <div class="form-row">
+        <label for="node-input-idx"><i class="icon-tag"></i> IDX</label>
+        <input type="text" id="node-input-idx" placeholder="IDX">
+    </div>
+    <div class="form-row">
+        <label for="node-input-value"><i class="icon-tag"></i> Value</label>
+        <input type="text" id="node-input-value" placeholder="Value">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="shutter-controller">
+    <p>A controller that helps in settings percentages on shutters</p>
+</script>
