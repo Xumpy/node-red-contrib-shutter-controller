@@ -53,10 +53,10 @@ module.exports = function(RED) {
 
     function shutterControllerNode(config) {
         RED.nodes.createNode(this,config);
-        const queue = Queue();
+        let queue = Queue();
 
         //linkLogToConsole(this);
-        var node = this;
+        let node = this;
 
         node.on('input', function(msg) {
             let shutterPercentage = Number(msg.payload.shutterPercentage);
