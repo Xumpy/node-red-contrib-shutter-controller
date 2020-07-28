@@ -21,16 +21,19 @@ describe('shutter-controller Node', function () {
             var n1 = helper.getNode("n1");
             n2.on("input", function (msg) {
                 const currentTime = new Date();
-                console.log(currentTime + ": " + msg.payload);
+                console.log(currentTime + ": " + msg.payload + " on topic: " + msg.topic);
                 iterator++; if (iterator === 5) done();
             });
             n1.receive({ payload: {
+                    topic: "RFY/0xE0002/1",
                     shutterPercentage: "70"
                 } });
             n1.receive({ payload: {
+                    topic: "RFY/0xE0002/1",
                     shutterPercentage: "30"
                 } });
             n1.receive({ payload: {
+                    topic: "RFY/0xE0002/1",
                     shutterPercentage: "100"
                 } });
         });

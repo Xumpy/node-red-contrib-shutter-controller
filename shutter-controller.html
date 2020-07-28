@@ -1,16 +1,13 @@
 <script type="text/javascript">
     RED.nodes.registerType('shutter-controller',{
         category: 'function',
-        color: '#a6bbcf',
+        color: '#FDF0C2',
         defaults: {
-            config: {
-                idx: { value: "" },
-                processTimeInSeconds: {value:"30"}
-            }
+            processTimeInSeconds: {value:"30"}
         },
         inputs:1,
         outputs:1,
-        icon: "file.png",
+        icon: "function.svg",
         label: function() {
             return this.name||"shutter-controller";
         }

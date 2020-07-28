@@ -27,6 +27,7 @@ module.exports = function(RED) {
 
     function sendUp(node, msg, timeOut){
         queue.place( function() {
+            msg.topic = msg.payload.topic;
             msg.payload = "UP";
             node.send(msg);
             setTimeout(function() {
@@ -36,6 +37,7 @@ module.exports = function(RED) {
     }
     function sendDown(node, msg, timeOut){
         queue.place(function() {
+            msg.topic = msg.payload.topic;
             msg.payload = "DOWN";
             node.send(msg);
             setTimeout(function() {
