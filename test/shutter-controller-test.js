@@ -22,7 +22,32 @@ describe('shutter-controller Node', function () {
             n2.on("input", function (msg) {
                 const currentTime = new Date();
                 console.log(currentTime + ": " + msg.payload + " on topic: " + msg.topic);
-                iterator++; if (iterator === 5) done();
+                iterator++; if (iterator === 4) done();
+            });
+            n1.receive({ payload: {
+                    topic: "RFY/0xE0002/1",
+                    shutterPercentage: "70"
+                } });
+            n1.receive({ payload: {
+                    topic: "RFY/0xE0002/1",
+                    shutterPercentage: "30"
+                } });
+        });
+    });
+    it('Test shutter controller', function (done) {
+        var flow = [
+            { id: "n1", type: "shutter-controller", processTimeInSeconds: 10 , name: "shutter-controller",wires:[["n2"]] },
+            { id: "n2", type: "helper" }
+        ];
+
+        helper.load(shutterControllerNode, flow, function () {
+            var iterator = 0;
+            var n2 = helper.getNode("n2");
+            var n1 = helper.getNode("n1");
+            n2.on("input", function (msg) {
+                const currentTime = new Date();
+                console.log(currentTime + ": " + msg.payload + " on topic: " + msg.topic);
+                iterator++; if (iterator === 2) done();
             });
             n1.receive({ payload: {
                     topic: "RFY/0xE0002/1",

@@ -1,4 +1,4 @@
-const Queue = require('sync-queue')
+const PAQ = require('priority-async-queue')
 
 function linkLogToConsole(context){
     context.error = function(logMessage) {
@@ -24,38 +24,40 @@ module.exports = function(RED) {
         return timeout;
     }
 
-    function sendUp(queue, node, msg, timeOut){
-        queue.place( function() {
+    function sendUp(paq, node, msg, timeOut){
+        paq.addTask( function() {
             msg.topic = msg.payload.topic;
             msg.payload = "UP";
             node.send(msg);
+            paq.pause();
             setTimeout(function() {
-                queue.next();
-            }, timeOut);
+                paq.resume();
+                }, timeOut);
         });
     }
-    function sendDown(queue, node, msg, timeOut){
-        queue.place(function() {
+    function sendDown(paq, node, msg, timeOut){
+        paq.addTask(function() {
             msg.topic = msg.payload.topic;
             msg.payload = "DOWN";
             node.send(msg);
+            paq.pause();
             setTimeout(function() {
-                queue.next();
-            }, timeOut);
+                paq.resume();
+                }, timeOut);
         });
     }
-    function sendStop(queue, node, msg){
-        queue.place(function() {
+    function sendStop(paq, node, msg){
+        paq.addTask(function() {
             msg.payload = "STOP";
-            node.send(msg); queue.next();
+            node.send(msg);
         });
     }
 
     function shutterControllerNode(config) {
         RED.nodes.createNode(this,config);
-        let queue = Queue();
+        let paq = new PAQ();
 
-        //linkLogToConsole(this);
+        linkLogToConsole(this);
         let node = this;
 
         node.on('input', function(msg) {
@@ -65,15 +67,19 @@ module.exports = function(RED) {
             // example 60% open, want to go to 50% needs to subtract 10% (-10%)
 
             if (shutterPercentage === 0){
-                sendUp(queue, node, msg, calculateTimeOut(config, differentPercentage));
+                paq.clearTask();
+                paq.resume();
+                sendUp(paq, node, msg, calculateTimeOut(config, differentPercentage));
             } else if (shutterPercentage === 100){
-                sendDown(queue, node, msg, calculateTimeOut(config, differentPercentage));
+                paq.clearTask();
+                paq.resume();
+                sendDown(paq, node, msg, calculateTimeOut(config, differentPercentage));
             } else if (differentPercentage < 0){
-                sendUp(queue, node, msg, calculateTimeOut(config, differentPercentage));
-                sendStop(queue, node, msg);
+                sendUp(paq, node, msg, calculateTimeOut(config, differentPercentage));
+                sendStop(paq, node, msg);
             } else if (differentPercentage > 0){
-                sendDown(queue, node, msg, calculateTimeOut(config, differentPercentage));
-                sendStop(queue, node, msg);
+                sendDown(paq, node, msg, calculateTimeOut(config, differentPercentage));
+                sendStop(paq, node, msg);
             }
             currentPercentage = shutterPercentage;
         });
