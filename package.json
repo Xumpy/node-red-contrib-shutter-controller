@@ -18,8 +18,7 @@
   "license": "ISC",
   "dependencies": {
     "node-red": "^1.1.2",
-    "sync-queue": "0.0.2",
-    "priority-async-queue": "1.2.10",
+    "bull": "3.18.0",
     "node-red-node-test-helper": "^0.2.5"
   }
 }

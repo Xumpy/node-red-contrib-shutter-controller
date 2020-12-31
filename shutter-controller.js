@@ -1,4 +1,4 @@
-const PAQ = require('priority-async-queue')
+const Queue = require('bull');
 
 function linkLogToConsole(context){
     context.error = function(logMessage) {
@@ -13,6 +13,10 @@ function linkLogToConsole(context){
         const currentTime = new Date();
         console.log(currentTime + ": " + logMessage);
     }
+    context.send = function(logMessage) {
+        const currentTime = new Date();
+        console.log(currentTime + ": " + logMessage);
+    }
 }
 
 module.exports = function(RED) {
@@ -24,62 +28,78 @@ module.exports = function(RED) {
         return timeout;
     }
 
-    function sendUp(paq, node, msg, timeOut){
-        paq.addTask( function() {
-            msg.topic = msg.payload.topic;
-            msg.payload = "UP";
-            node.send(msg);
-            paq.pause();
+    function createQueue(queueName, host){
+        let queue = new Queue(queueName, {
+            redis: {
+                host: host
+            }
+        });
+
+        queue.process( function (job, done){
+            job.data.msg.topic = job.data.msg.payload.topic;
+            job.data.msg.payload = "UP";
+
             setTimeout(function() {
-                paq.resume();
-                }, timeOut);
+                done(job.data.msg);
+            }, job.data.timeout);
         });
+        return queue;
     }
-    function sendDown(paq, node, msg, timeOut){
-        paq.addTask(function() {
-            msg.topic = msg.payload.topic;
-            msg.payload = "DOWN";
-            node.send(msg);
-            paq.pause();
-            setTimeout(function() {
-                paq.resume();
-                }, timeOut);
-        });
+
+    function sendUp(queue, node, msg, timeout){
+        node.send( queue.add({
+                msg: msg,
+                command: "UP",
+                timeout: timeout
+            }));
     }
-    function sendStop(paq, node, msg){
-        paq.addTask(function() {
-            msg.payload = "STOP";
-            node.send(msg);
-        });
+
+    function sendDown(queue, node, msg, timeout){
+        node.send( queue.add({
+                msg: msg,
+                command: "DOWN",
+                node: node,
+                timeout: timeout
+            }));
+    }
+
+    function sendStop(queue, node, msg, timeout){
+        node.send( queue.add({
+                msg: msg,
+                command: "STOP",
+                node: node,
+                timeout: timeout
+            }));
     }
 
     function shutterControllerNode(config) {
         RED.nodes.createNode(this,config);
-        let paq = new PAQ();
+
+        let queue = createQueue(config.shutterName, "192.168.1.3");
 
         linkLogToConsole(this);
         let node = this;
 
         node.on('input', function(msg) {
+            console.log(node);
+
             let shutterPercentage = Number(msg.payload.shutterPercentage);
             let differentPercentage = shutterPercentage - currentPercentage;
             // example 10% open, want to go to 50% needs to add 40% (40%)
             // example 60% open, want to go to 50% needs to subtract 10% (-10%)
 
             if (shutterPercentage === 0){
-                paq.clearTask();
-                paq.resume();
-                sendUp(paq, node, msg, calculateTimeOut(config, differentPercentage));
+                //queue.destroy();
+                sendUp(queue, node, msg, 0);
             } else if (shutterPercentage === 100){
-                paq.clearTask();
-                paq.resume();
-                sendDown(paq, node, msg, calculateTimeOut(config, differentPercentage));
+                //queue.destroy();
+                sendDown(queue, node, msg, 0);
             } else if (differentPercentage < 0){
-                sendUp(paq, node, msg, calculateTimeOut(config, differentPercentage));
-                sendStop(paq, node, msg);
+                sendUp(queue, node, msg, 0);
+                sendStop(queue, node, msg, calculateTimeOut(config, differentPercentage));
             } else if (differentPercentage > 0){
-                sendDown(paq, node, msg, calculateTimeOut(config, differentPercentage));
-                sendStop(paq, node, msg);
+                sendDown(queue, node, msg, 0);
+                sendStop(queue, node, msg, calculateTimeOut(config, differentPercentage));
             }
             currentPercentage = shutterPercentage;
         });
