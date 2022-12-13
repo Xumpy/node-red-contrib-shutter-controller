@@ -17,8 +17,8 @@
   },
   "license": "ISC",
   "dependencies": {
-    "node-red": "^1.1.2",
+    "node-red": "^3.0.2",
     "bull": "3.18.0",
-    "node-red-node-test-helper": "^0.2.5"
+    "node-red-node-test-helper": "^0.3.0"
   }
 }
